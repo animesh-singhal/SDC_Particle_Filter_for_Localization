@@ -63,8 +63,8 @@ class ParticleFilter {
    * @param predicted Vector of predicted landmark observations
    * @param observations Vector of landmark observations
    */
-  void dataAssociation(std::vector<LandmarkObs> predicted, 
-                       std::vector<LandmarkObs>& observations);
+  void dataAssociation(std::vector<LandmarkObs>& transformed_obs, 
+                                     std::vector<LandmarkObs> map_landmark);
   
   /**
    * updateWeights Updates the weights for each particle based on the likelihood
@@ -76,8 +76,28 @@ class ParticleFilter {
    * @param map Map class containing map landmarks
    */
   void updateWeights(double sensor_range, double std_landmark[], 
-                     const std::vector<LandmarkObs> &observations,
+                     const std::vector<LandmarkObs> &sensor_observations,
                      const Map &map_landmarks);
+
+  /**
+   * multiv_prob calculates multivariate gaussian probability density
+   *   which will be used to calculate particle's weight
+   * The Multivariate-Gaussian probability density has two dimensions, x and y. 
+   * The mean of the Multivariate-Gaussian is the measurement's associated landmark position 
+   * The Multivariate-Gaussian's standard deviation is described by our initial uncertainty in the x and y ranges
+   * The Multivariate-Gaussian is evaluated at the point of the transformed measurement's position.
+   *
+   * @param sig_x Uncertainity in x direction
+   * @param sig_y Uncertainity in y direction
+   * @param x_obs x coordinate of transformed sensor measurement's position
+   * @param y_obs y coordinate of transformed sensor measurement's position
+   * @param mu_x x coordinate of measurement's associated landmark position
+   * @param mu_y y coordinate of measurement's associated landmark position
+   */
+
+  double multiv_prob(double sig_x, double sig_y, double x_obs, double y_obs,
+                   double mu_x, double mu_y);
+
   
   /**
    * resample Resamples from the updated set of particles to form

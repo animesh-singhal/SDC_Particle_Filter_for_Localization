@@ -9,6 +9,7 @@
 using nlohmann::json;
 using std::string;
 using std::vector;
+using std::cout;
 
 // Checks if the SocketIO event has JSON data.
 // If there is data the JSON object in string format will be returned,
@@ -27,7 +28,7 @@ string hasData(string s) {
 
 int main() {
   uWS::Hub h;
-
+  
   // Set up parameters here
   double delta_t = 0.1;  // Time elapsed between measurements [sec]
   double sensor_range = 50;  // Sensor range [m]
@@ -46,7 +47,7 @@ int main() {
 
   // Create particle filter
   ParticleFilter pf;
-
+  
   h.onMessage([&pf,&map,&delta_t,&sensor_range,&sigma_pos,&sigma_landmark]
               (uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, 
                uWS::OpCode opCode) {
@@ -55,15 +56,17 @@ int main() {
     // The 2 signifies a websocket event
     if (length && length > 2 && data[0] == '4' && data[1] == '2') {
       auto s = hasData(string(data));
-
+      
       if (s != "") {
         auto j = json::parse(s);
-
+        
         string event = j[0].get<string>();
         
         if (event == "telemetry") {
+          
           // j[1] is the data JSON object
           if (!pf.initialized()) {
+            
             // Sense noisy position data from the simulator
             double sense_x = std::stod(j[1]["sense_x"].get<string>());
             double sense_y = std::stod(j[1]["sense_y"].get<string>());
@@ -78,7 +81,7 @@ int main() {
 
             pf.prediction(delta_t, sigma_pos, previous_velocity, previous_yawrate);
           }
-
+		  
           // receive noisy observation data from the simulator
           // sense_observations in JSON format 
           //   [{obs_x,obs_y},{obs_x,obs_y},...{obs_x,obs_y}] 
@@ -100,7 +103,7 @@ int main() {
           std::istream_iterator<float>(),
           std::back_inserter(y_sense));
 
-          for (int i = 0; i < x_sense.size(); ++i) {
+          for (unsigned int i = 0; i < x_sense.size(); ++i) {
             LandmarkObs obs;
             obs.x = x_sense[i];
             obs.y = y_sense[i];
